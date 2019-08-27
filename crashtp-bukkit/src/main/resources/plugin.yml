@@ -1,0 +1,6 @@
+name: CrashTP
+version: 1.0
+main: github.scarsz.crashtp.bukkit.BukkitPlugin
+api-version: 1.13
+authors: [Scarsz]
+description: Teleport players to the world spawn when they crash after joining the server
