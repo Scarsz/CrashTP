@@ -1,5 +1,5 @@
 name: CrashTP
-version: 1.0
+version: 1.0.1
 main: github.scarsz.crashtp.bukkit.BukkitPlugin
 api-version: 1.13
 authors: [Scarsz]
