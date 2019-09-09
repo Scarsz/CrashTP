@@ -44,9 +44,9 @@ public class SpongePlugin {
         this.crashDetector = new CrashDetector(
                 (level, string) -> {
                     switch (level.getName()) {
-                        case "SEVERE": logger.error(string);
-                        case "WARNING": logger.warn(string);
-                        case "INFO": default: logger.info(string);
+                        case "SEVERE": logger.error(string); break;
+                        case "WARNING": logger.warn(string); break;
+                        case "INFO": default: logger.info(string); break;
                     }
                 },
                 uuid -> getUser(uuid).getName(),
