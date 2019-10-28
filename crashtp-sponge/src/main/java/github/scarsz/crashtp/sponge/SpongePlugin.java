@@ -103,7 +103,13 @@ public class SpongePlugin {
 
     @Listener(order = Order.PRE)
     public void onPlayerDisconnect(ClientConnectionEvent.Disconnect event) {
-        this.crashDetector.noticePlayerQuit(event.getTargetEntity().getUniqueId());
+        long logoutTime = this.crashDetector.noticePlayerQuit(event.getTargetEntity().getUniqueId());
+
+        Sponge.getScheduler().createTaskBuilder()
+                .name("CrashTP - Check if " + event.getTargetEntity().getName() + " has been offline for long enough")
+                .delay(1, TimeUnit.MINUTES)
+                .execute(() -> this.crashDetector.noticePlayerLeft(event.getTargetEntity().getUniqueId(), logoutTime))
+                .submit(this);
     }
 
     public User getUser(UUID uuid) {
