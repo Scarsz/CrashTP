@@ -79,7 +79,13 @@ public final class BukkitPlugin extends JavaPlugin implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerQuit(PlayerQuitEvent event) {
-        this.crashDetector.noticePlayerQuit(event.getPlayer().getUniqueId());
+        long logoutTime = this.crashDetector.noticePlayerQuit(event.getPlayer().getUniqueId());
+
+        Bukkit.getScheduler().runTaskLater(
+                this,
+                () -> this.crashDetector.noticePlayerLeft(event.getPlayer().getUniqueId(), logoutTime),
+                20 * 60 // 1 minute
+        );
     }
 
 }

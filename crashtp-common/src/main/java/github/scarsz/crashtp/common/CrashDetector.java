@@ -13,6 +13,7 @@ import java.util.logging.Level;
 public class CrashDetector {
 
     private final Map<UUID, Long> joinTimes = new HashMap<>();
+    private final Map<UUID, Long> logoutTimes = new HashMap<>();
     private final Map<UUID, AtomicInteger> badJoins = new HashMap<>();
     private final BiConsumer<Level, String> logConsumer;
     private final Function<UUID, String> uuidTranslator;
@@ -27,18 +28,22 @@ public class CrashDetector {
     public long noticePlayerJoin(UUID uuid) {
         long timestamp = System.currentTimeMillis();
         joinTimes.put(uuid, timestamp);
+        logoutTimes.remove(uuid);
         return timestamp;
     }
 
-    public void noticePlayerQuit(UUID uuid) {
+    public long noticePlayerQuit(UUID uuid) {
         Long joinTime = joinTimes.get(uuid);
         if (joinTime == null) {
             logConsumer.accept(Level.WARNING, "Player " + uuidTranslator.apply(uuid) + " has no join time???");
-            return;
+            return -1;
         }
 
+        long currentTime = System.currentTimeMillis();
+        logoutTimes.put(uuid, currentTime);
+
         // make sure the play time was <= 5 seconds
-        if (System.currentTimeMillis() - joinTime <= TimeUnit.SECONDS.toMillis(5)) {
+        if (currentTime - joinTime <= TimeUnit.SECONDS.toMillis(5)) {
             int badJoins = this.badJoins.computeIfAbsent(uuid, v -> new AtomicInteger()).incrementAndGet();
 
             if (badJoins >= 2) {
@@ -46,10 +51,18 @@ public class CrashDetector {
                 unstuckConsumer.accept(uuid);
             }
         }
+        return currentTime;
     }
 
     public void noticePlayerOkay(UUID uuid, long originalJoinTime) {
         if (joinTimes.containsKey(uuid) && joinTimes.get(uuid) == originalJoinTime) {
+            badJoins.remove(uuid);
+        }
+    }
+
+    public void noticePlayerLeft(UUID uuid, long originalLogoutTime) {
+        if (logoutTimes.containsKey(uuid) && logoutTimes.get(uuid) == originalLogoutTime) {
+            logoutTimes.remove(uuid); // clean up
             badJoins.remove(uuid);
         }
     }
